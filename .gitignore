@@ -1,0 +1,93 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+# Distributions / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── Testing ──────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.hypothesis/
+
+# ── Linting / type checking ───────────────────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ── Node / VS Code extension ─────────────────────────────────────────────────
+node_modules/
+vscode-extension/node_modules/
+vscode-extension/out/
+vscode-extension/*.vsix
+*.vsix
+
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ── DevMem runtime data ───────────────────────────────────────────────────────
+# Local data directory — never commit user activity data
+*.db
+*.db-wal
+*.db-shm
+*.faiss
+*.tsv
+shell.tsv
+git.tsv
+daemon.pid
+daemon.log
+
+# Sandbox / Docker ephemeral files
+sandbox.sh.lock
+
+# ── Secrets / environment ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets.json

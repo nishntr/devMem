@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devmem"
+version = "0.1.0"
+description = "Local-first developer memory layer"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["developer-tools", "memory", "productivity", "cli"]
+dependencies = [
+    "click>=8.1",
+    "rich>=13.0",
+    "sentence-transformers>=3.0",
+    "faiss-cpu>=1.8",
+    "watchdog>=4.0",
+    "flask>=3.0",
+    "requests>=2.31",
+    "platformdirs>=4.0",
+    "python-dateutil>=2.9",
+    "humanize>=4.0",
+    "mcp>=1.0",
+]
+
+[project.scripts]
+devmem = "devmem.cli:cli"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov", "pytest-mock", "ruff"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["devmem*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

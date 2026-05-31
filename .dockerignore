@@ -1,0 +1,27 @@
+# Python artifacts
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Node
+node_modules/
+vscode-extension/node_modules/
+
+# Test / editor artifacts
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Version control
+.git/
+
+# OS
+.DS_Store

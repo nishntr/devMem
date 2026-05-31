@@ -1,0 +1,46 @@
+FROM python:3.12-slim
+
+# Install system dependencies (git, zsh for shell hook testing)
+RUN apt-get update && apt-get install -y \
+    git \
+    zsh \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user to mimic a real dev environment
+RUN useradd -m -s /bin/zsh devuser
+USER devuser
+WORKDIR /home/devuser
+
+# Copy the project into the container
+COPY --chown=devuser:devuser . /home/devuser/devmem/
+
+# Install deps in separate layers so Docker caches each one.
+# sentence-transformers/PyTorch (~800 MB) is omitted — embeddings fail
+# gracefully at runtime since the sandbox runs with --network none.
+RUN python -m venv /home/devuser/.venv && \
+    /home/devuser/.venv/bin/pip install --quiet --upgrade pip
+
+# faiss-cpu is excluded — it requires ~35 MB download and is unusable
+# in the sandbox anyway (no sentence-transformers model, --network none).
+# VectorStore gracefully no-ops when faiss is not installed.
+RUN /home/devuser/.venv/bin/pip install --quiet --timeout 60 --retries 3 \
+        click rich watchdog flask requests platformdirs \
+        python-dateutil humanize mcp
+
+# Dev/test tools
+RUN /home/devuser/.venv/bin/pip install --quiet --timeout 60 --retries 5 \
+        pytest pytest-cov pytest-mock ruff
+
+# Install devmem itself (no ML deps)
+RUN /home/devuser/.venv/bin/pip install --quiet --no-deps \
+        -e "/home/devuser/devmem"
+
+ENV PATH="/home/devuser/.venv/bin:$PATH"
+
+# Pre-configure a fake git identity (required for git hooks to fire)
+RUN git config --global user.email "sandbox@devmem.test" && \
+    git config --global user.name "Sandbox User"
+
+# Default: drop into an interactive shell so you can run devmem commands manually
+CMD ["/bin/zsh"]

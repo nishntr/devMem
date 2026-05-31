@@ -1,0 +1,20 @@
+#!/bin/sh
+# DevMem git post-merge hook
+# Installed globally via: git config --global core.hooksPath ~/.config/devmem/git-hooks/
+# Arguments: $1=1 if squash merge, 0 otherwise
+
+IS_SQUASH="${1:-0}"
+__devmem_dir="${DEVMEM_DATA_DIR:-$HOME/.local/share/devmem}"
+REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+# Best-effort: extract the source branch name from the reflog
+MERGED_BRANCH=$(git reflog show --format="%gs" -1 HEAD 2>/dev/null \
+    | sed -n "s/^merge //p" | head -1)
+
+printf '%s\tmerge\t%s\t%s\t%s\t%s\n' \
+    "$TS" "$REPO_PATH" "$BRANCH" "$MERGED_BRANCH" "$IS_SQUASH" \
+    >> "$__devmem_dir/git.tsv" 2>/dev/null
+
+exit 0

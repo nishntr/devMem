@@ -1,0 +1,31 @@
+#!/bin/sh
+# DevMem git pre-push hook
+# Installed globally via: git config --global core.hooksPath ~/.config/devmem/git-hooks/
+# Arguments: $1=remote_name $2=remote_url
+# Stdin: lines of "local_ref local_sha remote_ref remote_sha"
+
+REMOTE="$1"
+__devmem_dir="${DEVMEM_DATA_DIR:-$HOME/.local/share/devmem}"
+REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+COMMIT_COUNT=0
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+    # Skip deletions (local_sha is all zeros)
+    [ "$local_sha" = "0000000000000000000000000000000000000000" ] && continue
+    if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+        # New branch: count only commits not already present on the remote
+        # This avoids inflating the count with the entire history of the branch
+        COUNT=$(git rev-list --count "$local_sha" --not --remotes="$REMOTE" 2>/dev/null || echo 0)
+    else
+        COUNT=$(git rev-list "${remote_sha}..${local_sha}" --count 2>/dev/null || echo 0)
+    fi
+    COMMIT_COUNT=$(( COMMIT_COUNT + COUNT ))
+done
+
+printf '%s\tpush\t%s\t%s\t%s\t%d\n' \
+    "$TS" "$REPO_PATH" "$REMOTE" "$BRANCH" "$COMMIT_COUNT" \
+    >> "$__devmem_dir/git.tsv" 2>/dev/null
+
+exit 0

@@ -1,0 +1,40 @@
+{
+  "name": "devmem-vscode",
+  "displayName": "DevMem",
+  "description": "Developer memory layer — captures workspace activity for devmem",
+  "version": "0.1.0",
+  "publisher": "devmem",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "DevMem",
+      "properties": {
+        "devmem.port": {
+          "type": "number",
+          "default": 27182,
+          "description": "Port for the DevMem daemon HTTP server"
+        },
+        "devmem.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable the DevMem VS Code extension"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

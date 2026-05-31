@@ -1,0 +1,18 @@
+#!/bin/sh
+# DevMem git post-checkout hook
+# $1=prev ref, $2=new ref, $3=flag (1=branch, 0=file checkout)
+
+# Only record branch switches, not file checkouts
+[ "$3" = "1" ] || exit 0
+
+__devmem_dir="${DEVMEM_DATA_DIR:-$HOME/.local/share/devmem}"
+REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+NEW_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+OLD_BRANCH=$(git name-rev --name-only "$1" 2>/dev/null || echo "unknown")
+TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+printf '%s\tbranch\t%s\t%s\t%s\n' \
+    "$TS" "$REPO_PATH" "$OLD_BRANCH" "$NEW_BRANCH" \
+    >> "$__devmem_dir/git.tsv" 2>/dev/null
+
+exit 0
