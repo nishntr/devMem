@@ -156,6 +156,20 @@ class DB:
             );
             INSERT INTO events SELECT * FROM _events_bak;
             DROP TABLE _events_bak;
+            CREATE INDEX IF NOT EXISTS idx_events_date       ON events(date);
+            CREATE INDEX IF NOT EXISTS idx_events_timestamp  ON events(timestamp);
+            CREATE INDEX IF NOT EXISTS idx_events_type       ON events(event_type);
+            CREATE INDEX IF NOT EXISTS idx_events_repo       ON events(repo_name);
+            CREATE INDEX IF NOT EXISTS idx_events_session    ON events(session_id);
+            CREATE INDEX IF NOT EXISTS idx_events_embedding  ON events(embedding_id);
+            CREATE TRIGGER IF NOT EXISTS events_ai AFTER INSERT ON events BEGIN
+                INSERT INTO events_fts(rowid, content, repo_name)
+                VALUES (new.id, new.content, COALESCE(new.repo_name, ''));
+            END;
+            CREATE TRIGGER IF NOT EXISTS events_ad AFTER DELETE ON events BEGIN
+                INSERT INTO events_fts(events_fts, rowid, content, repo_name)
+                VALUES ('delete', old.id, old.content, COALESCE(old.repo_name, ''));
+            END;
         """)
         _log.info("DB migration: complete")
 

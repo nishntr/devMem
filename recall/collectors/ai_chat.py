@@ -531,8 +531,8 @@ class AIChatCollector:
         )
 
     def _is_duplicate(self, event: Event) -> bool:
-        """Return True if this event's content hash has been seen before."""
-        h = hashlib.sha256(event.content.encode()).hexdigest()[:16]
+        """Return True if this event's (content, timestamp) hash has been seen before."""
+        h = hashlib.sha256(f"{event.content}|{event.timestamp}".encode()).hexdigest()[:16]
         seen_json = self._get_kv(_HASH_SET_KEY) or "[]"
         try:
             seen: list[str] = json.loads(seen_json)

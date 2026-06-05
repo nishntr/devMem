@@ -46,10 +46,8 @@ _CMD_CATEGORY_RULES: list[tuple[str, str]] = [
     ("rspec ", "test"),
     ("flutter test", "test"),
     # build
-    ("make ", "build"),
-    ("make\t", "build"),
-    ("cmake ", "build"),
-    ("cmake\t", "build"),
+    ("make", "build"),
+    ("cmake", "build"),
     ("cargo build", "build"),
     ("cargo b ", "build"),
     ("gradle ", "build"),
@@ -89,6 +87,7 @@ _CMD_CATEGORY_RULES: list[tuple[str, str]] = [
     ("uv add", "install"),
     ("uv pip install", "install"),
     # deploy
+    ("docker", "deploy"),
     ("kubectl ", "deploy"),
     ("terraform ", "deploy"),
     ("helm ", "deploy"),
