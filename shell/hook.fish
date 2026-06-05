@@ -1,4 +1,4 @@
-# Recall shell hook — source this in ~/.config/fish/config.fish
+# Recall shell hook, source this in ~/.config/fish/config.fish
 # Installed by: recall init
 
 set -g __devrecall_dir (set -q DEV_RECALL_DATA_DIR; and echo $DEV_RECALL_DATA_DIR; or echo "$HOME/.local/share/dev-recall")

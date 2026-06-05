@@ -5,10 +5,14 @@ This module embeds the hook scripts as strings so `recall init` can
 write them to ~/.config/dev-recall/.
 """
 
-ZSH_HOOK = r'''# Recall shell hook — source this in ~/.zshrc
+# Recall shell hook, source this in ~/.zshrc
+ZSH_HOOK = r'''
 # Installed by: recall init
 
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}" {
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
+__devrecall_shell_log="$__devrecall_dir/shell.tsv"
+
+__devrecall_preexec() {
     __devrecall_cmd="$1"
     __devrecall_start_ms=$(( $(date +%s) * 1000 ))
 }

@@ -1,4 +1,4 @@
-# Recall shell hook — source this in ~/.bashrc
+# Recall shell hook, source this in ~/.bashrc
 # Installed by: recall init
 
 __devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
