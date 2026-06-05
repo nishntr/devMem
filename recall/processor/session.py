@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Callable, Optional
 
-from devmem.models import Event
+from recall.models import Event
 
 logger = logging.getLogger(__name__)
 

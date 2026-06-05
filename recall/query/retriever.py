@@ -6,13 +6,13 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from devmem.models import Event, EventType
-from devmem.query.timeparser import parse_time_expression, to_iso
+from recall.models import Event, EventType
+from recall.query.timeparser import parse_time_expression, to_iso
 
 if TYPE_CHECKING:
-    from devmem.processor.embedder import EmbedderQueue
-    from devmem.storage.db import DB
-    from devmem.storage.vectors import VectorStore
+    from recall.processor.embedder import EmbedderQueue
+    from recall.storage.db import DB
+    from recall.storage.vectors import VectorStore
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Callable, Optional
 
-from devmem.models import Event, EventType, build_content
+from recall.models import Event, EventType, build_content
 
 logger = logging.getLogger(__name__)
 

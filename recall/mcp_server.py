@@ -1,4 +1,4 @@
-"""MCP server — exposes DevMem tools via the Model Context Protocol (stdio)."""
+"""MCP server — exposes Recall tools via the Model Context Protocol (stdio)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from mcp.server.fastmcp import FastMCP
 
 logger = logging.getLogger(__name__)
 
-mcp = FastMCP("devmem")
+mcp = FastMCP("dev-recall")
 
 
 # ---------------------------------------------------------------------------
@@ -31,16 +31,16 @@ def recall(query: str, days: int = 7, top_k: int = 10) -> str:
         top_k: Number of results to return (default 10)
     """
     try:
-        from devmem.config import load_config
-        from devmem.storage.db import DB
-        from devmem.storage.vectors import VectorStore
-        from devmem.processor.embedder import EmbedderQueue
-        from devmem.query.retriever import Retriever
-        from devmem.query.timeparser import to_iso
+        from recall.config import load_config
+        from recall.storage.db import DB
+        from recall.storage.vectors import VectorStore
+        from recall.processor.embedder import EmbedderQueue
+        from recall.query.retriever import Retriever
+        from recall.query.timeparser import to_iso
 
         config = load_config()
         if not config.db_path.exists():
-            return "DevMem database not found. Run: devmem init"
+            return "Recall database not found. Run: recall init"
 
         now = datetime.now(timezone.utc)
         from datetime import timedelta
@@ -81,14 +81,14 @@ def today_summary() -> str:
     Get a summary of what the developer worked on today.
     """
     try:
-        from devmem.config import load_config
-        from devmem.storage.db import DB
-        from devmem.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
-        from devmem.query.context import build_prompt_summary
+        from recall.config import load_config
+        from recall.storage.db import DB
+        from recall.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
+        from recall.query.context import build_prompt_summary
 
         config = load_config()
         if not config.db_path.exists():
-            return "DevMem database not found. Run: devmem init"
+            return "Recall database not found. Run: recall init"
 
         configure(model=config.llm_model)
         db = DB(config.db_path)
@@ -136,13 +136,13 @@ def recent_repos(days: int = 7) -> str:
         days: How many days back to look (default 7)
     """
     try:
-        from devmem.config import load_config
-        from devmem.storage.db import DB
+        from recall.config import load_config
+        from recall.storage.db import DB
         from datetime import timedelta
 
         config = load_config()
         if not config.db_path.exists():
-            return "DevMem database not found. Run: devmem init"
+            return "Recall database not found. Run: recall init"
 
         db = DB(config.db_path)
         now = datetime.now(timezone.utc)
@@ -185,16 +185,16 @@ def find_command(description: str, repo: Optional[str] = None) -> str:
         repo: Optional: limit search to a specific repo name
     """
     try:
-        from devmem.config import load_config
-        from devmem.storage.db import DB
-        from devmem.storage.vectors import VectorStore
-        from devmem.processor.embedder import EmbedderQueue
-        from devmem.query.retriever import Retriever
-        from devmem.models import EventType
+        from recall.config import load_config
+        from recall.storage.db import DB
+        from recall.storage.vectors import VectorStore
+        from recall.processor.embedder import EmbedderQueue
+        from recall.query.retriever import Retriever
+        from recall.models import EventType
 
         config = load_config()
         if not config.db_path.exists():
-            return "DevMem database not found. Run: devmem init"
+            return "Recall database not found. Run: recall init"
 
         db = DB(config.db_path)
         vectors = VectorStore.from_file(config.faiss_path, dim=config.embedding_dim)
@@ -239,12 +239,12 @@ def timeline(date: Optional[str] = None) -> str:
         date: Date in YYYY-MM-DD format. Defaults to today.
     """
     try:
-        from devmem.config import load_config
-        from devmem.storage.db import DB
+        from recall.config import load_config
+        from recall.storage.db import DB
 
         config = load_config()
         if not config.db_path.exists():
-            return "DevMem database not found. Run: devmem init"
+            return "Recall database not found. Run: recall init"
 
         db = DB(config.db_path)
         date_str = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")

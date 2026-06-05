@@ -1,9 +1,9 @@
-"""Entry point for running the daemon as a module: python -m devmem.daemon_main"""
+"""Entry point for running the daemon as a module: python -m recall.daemon_main"""
 
 import logging
 import os
-from devmem.config import load_config
-from devmem.daemon import Daemon
+from recall.config import load_config
+from recall.daemon import Daemon
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     config = load_config()
     config.data_dir.mkdir(parents=True, exist_ok=True)
     config.config_dir.mkdir(parents=True, exist_ok=True)
-    # Write PID file so `devmem daemon status/stop` can find this process.
+    # Write PID file so `dev-recall daemon status/stop` can find this process.
     # start(foreground=True) skips _write_pid(), so we do it here.
     try:
         config.pid_path.write_text(str(os.getpid()))

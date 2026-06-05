@@ -1,4 +1,4 @@
-"""DevMem CLI — all commands."""
+"""Recall CLI — all commands."""
 
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ from rich.table import Table
 from rich import box
 from rich.text import Text
 
-from devmem.config import load_config, save_config
-from devmem.models import EventType
+from recall.config import load_config, save_config
+from recall.models import EventType
 
 console = Console()
 err_console = Console(stderr=True)
@@ -68,7 +68,7 @@ _TYPE_STYLES = {
 @click.group()
 @click.version_option()
 def cli():
-    """DevMem — local-first developer memory layer."""
+    """Recall — local-first developer memory layer."""
     pass
 
 
@@ -80,10 +80,10 @@ def cli():
 @cli.command()
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompts")
 def init(yes: bool):
-    """Set up DevMem: create dirs, install hooks, start daemon."""
+    """Set up Recall: create dirs, install hooks, start daemon."""
     config = load_config()
 
-    console.rule("[bold]DevMem — Developer Memory Layer[/bold]")
+    console.rule("[bold]Recall — Developer Memory Layer[/bold]")
     console.print()
 
     steps = [
@@ -103,8 +103,8 @@ def init(yes: bool):
 
     # Step 2: Init DB and FAISS
     _print_step(2, steps[1])
-    from devmem.storage.db import DB
-    from devmem.storage.vectors import VectorStore
+    from recall.storage.db import DB
+    from recall.storage.vectors import VectorStore
 
     db = DB(config.db_path)
     db.close()
@@ -126,15 +126,15 @@ def init(yes: bool):
 
     # Step 6: VS Code extension hint
     _print_step(6, steps[5])
-    console.print("  → Run: [cyan]code --install-extension devmem.devmem-vscode[/cyan] (optional)")
+    console.print("  → Run: [cyan]code --install-extension recall.recall-vscode[/cyan] (optional)")
 
     console.print()
-    console.print("[bold green]Done. DevMem is running.[/bold green]")
+    console.print("[bold green]Done. Recall is running.[/bold green]")
     console.print()
     console.print("Try:")
-    console.print("  [cyan]devmem today[/cyan]           — see today's activity")
-    console.print('  [cyan]devmem ask "what did I work on?"[/cyan]')
-    console.print("  [cyan]devmem timeline[/cyan]")
+    console.print("  [cyan]recall today[/cyan]           — see today's activity")
+    console.print('  [cyan]recall ask "what did I work on?"[/cyan]')
+    console.print("  [cyan]recall timeline[/cyan]")
 
 
 def _print_step(n: int, label: str):
@@ -162,7 +162,7 @@ def _install_shell_hook(config) -> None:
             continue
 
         # Append source line to rc file if not already present
-        source_line = f"\n# DevMem shell hook\nsource \"{hook_dst}\"\n"
+        source_line = f"\n# Recall shell hook\nsource \"{hook_dst}\"\n"
         rc_content = rc_file.read_text() if rc_file.exists() else ""
         if str(hook_dst) not in rc_content:
             rc_file.parent.mkdir(parents=True, exist_ok=True)
@@ -179,7 +179,7 @@ def _install_shell_hook(config) -> None:
 
 def _write_hook_from_package(config, shell_name: str) -> None:
     """Write a single hook file when the package is installed (no source tree available)."""
-    from devmem._hooks import ZSH_HOOK, BASH_HOOK, FISH_HOOK  # type: ignore[import]
+    from recall._hooks import ZSH_HOOK, BASH_HOOK, FISH_HOOK  # type: ignore[import]
 
     if shell_name == "zsh":
         config.hook_zsh_path.parent.mkdir(parents=True, exist_ok=True)
@@ -206,8 +206,8 @@ def _install_git_hooks(config) -> None:
                 shutil.copy2(str(src), str(dst))
                 os.chmod(str(dst), 0o755)
     else:
-        # Installed via pip — hooks are bundled in devmem._hooks
-        from devmem._hooks import GIT_POST_COMMIT, GIT_POST_CHECKOUT, GIT_PRE_PUSH, GIT_POST_MERGE
+        # Installed via pip — hooks are bundled in recall._hooks
+        from recall._hooks import GIT_POST_COMMIT, GIT_POST_CHECKOUT, GIT_PRE_PUSH, GIT_POST_MERGE
         for name, content in [
             ("post-commit", GIT_POST_COMMIT),
             ("post-checkout", GIT_POST_CHECKOUT),
@@ -231,7 +231,7 @@ def _install_git_hooks(config) -> None:
 
 def _start_daemon(config) -> None:
     """Try to start via systemd, fallback to background subprocess."""
-    from devmem.daemon import write_systemd_unit, is_running
+    from recall.daemon import write_systemd_unit, is_running
 
     if is_running(config):
         console.print("  → [dim]Daemon already running[/dim]")
@@ -240,7 +240,7 @@ def _start_daemon(config) -> None:
     try:
         unit_path = write_systemd_unit(config)
         subprocess.run(
-            ["systemctl", "--user", "enable", "--now", "devmem"],
+            ["systemctl", "--user", "enable", "--now", "dev-recall"],
             check=True,
             capture_output=True,
         )
@@ -248,20 +248,20 @@ def _start_daemon(config) -> None:
         # Get PID
         time.sleep(1)
         result = subprocess.run(
-            ["systemctl", "--user", "show", "devmem", "--property=MainPID"],
+            ["systemctl", "--user", "show", "dev-recall", "--property=MainPID"],
             capture_output=True, text=True,
         )
         pid = result.stdout.strip().split("=")[-1]
-        console.print(f"  → devmem.service is running (PID {pid})")
+        console.print(f"  → dev-recall.service is running (PID {pid})")
     except (subprocess.CalledProcessError, FileNotFoundError):
         # systemd not available — start as background process
-        from devmem.daemon import start_daemon_background
+        from recall.daemon import start_daemon_background
         try:
             pid = start_daemon_background(config)
             console.print(f"  → [green]✓[/green] Started daemon in background (PID {pid})")
         except Exception as exc:
             console.print(f"  → [yellow]Warning:[/yellow] could not start daemon: {exc}")
-            console.print("    Run manually: [cyan]devmem daemon start[/cyan]")
+            console.print("    Run manually: [cyan]recall daemon start[/cyan]")
 
 
 # ---------------------------------------------------------------------------
@@ -271,7 +271,7 @@ def _start_daemon(config) -> None:
 
 @cli.group()
 def daemon():
-    """Manage the DevMem background daemon."""
+    """Manage the Recall background daemon."""
     pass
 
 
@@ -280,7 +280,7 @@ def daemon():
 def daemon_start(foreground: bool):
     """Start the daemon."""
     config = load_config()
-    from devmem.daemon import is_running, Daemon
+    from recall.daemon import is_running, Daemon
 
     if not foreground and is_running(config):
         console.print("[yellow]Daemon is already running.[/yellow]")
@@ -294,7 +294,7 @@ def daemon_start(foreground: bool):
         d = Daemon(config)
         d.start(foreground=True)
     else:
-        from devmem.daemon import start_daemon_background
+        from recall.daemon import start_daemon_background
         pid = start_daemon_background(config)
         time.sleep(1)
         console.print(f"[green]Daemon started (PID {pid})[/green]")
@@ -304,7 +304,7 @@ def daemon_start(foreground: bool):
 def daemon_stop():
     """Stop the daemon."""
     config = load_config()
-    from devmem.daemon import stop_daemon, is_running
+    from recall.daemon import stop_daemon, is_running
 
     if not is_running(config):
         console.print("[yellow]Daemon is not running.[/yellow]")
@@ -319,7 +319,7 @@ def daemon_stop():
 def daemon_status():
     """Show daemon status and stats."""
     config = load_config()
-    from devmem.daemon import is_running, read_pid
+    from recall.daemon import is_running, read_pid
 
     running = is_running(config)
     pid = read_pid(config)
@@ -327,8 +327,8 @@ def daemon_status():
     console.print(f"Status: {status_str}" + (f" (PID {pid})" if pid else ""))
 
     if config.db_path.exists():
-        from devmem.storage.db import DB
-        from devmem.storage.vectors import VectorStore
+        from recall.storage.db import DB
+        from recall.storage.vectors import VectorStore
 
         db = DB(config.db_path)
         total = db.get_event_count()
@@ -348,17 +348,17 @@ def daemon_status():
 def daemon_install():
     """Install and enable the systemd user service."""
     config = load_config()
-    from devmem.daemon import write_systemd_unit
+    from recall.daemon import write_systemd_unit
 
     unit_path = write_systemd_unit(config)
     console.print(f"Written: {unit_path}")
     try:
         subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
-        subprocess.run(["systemctl", "--user", "enable", "--now", "devmem"], check=True)
+        subprocess.run(["systemctl", "--user", "enable", "--now", "dev-recall"], check=True)
         console.print("[green]Service enabled and started.[/green]")
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
         console.print(f"[yellow]systemctl failed: {exc}[/yellow]")
-        console.print("Start manually: [cyan]devmem daemon start[/cyan]")
+        console.print("Start manually: [cyan]recall daemon start[/cyan]")
 
 
 @daemon.command("logs")
@@ -397,13 +397,13 @@ def ask(query: str, top_k: int, show_events: bool, no_llm: bool):
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
-    from devmem.storage.vectors import VectorStore
-    from devmem.processor.embedder import EmbedderQueue
-    from devmem.query.retriever import Retriever
-    from devmem.query.context import build_prompt_ask
-    from devmem.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
-    from devmem.query.timeparser import parse_time_expression, humanise_range
+    from recall.storage.db import DB
+    from recall.storage.vectors import VectorStore
+    from recall.processor.embedder import EmbedderQueue
+    from recall.query.retriever import Retriever
+    from recall.query.context import build_prompt_ask
+    from recall.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
+    from recall.query.timeparser import parse_time_expression, humanise_range
 
     configure(model=config.llm_model)
 
@@ -464,9 +464,9 @@ def today(raw: bool):
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
-    from devmem.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
-    from devmem.query.context import build_prompt_summary
+    from recall.storage.db import DB
+    from recall.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
+    from recall.query.context import build_prompt_summary
 
     configure(model=config.llm_model)
     db = DB(config.db_path)
@@ -475,7 +475,7 @@ def today(raw: bool):
 
     if not events:
         console.print("[yellow]No events recorded today yet.[/yellow]")
-        console.print("[dim]Make sure the daemon is running: devmem daemon status[/dim]")
+        console.print("[dim]Make sure the daemon is running: recall daemon status[/dim]")
         db.close()
         return
 
@@ -526,9 +526,9 @@ def week(raw: bool):
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
-    from devmem.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
-    from devmem.query.context import build_prompt_summary
+    from recall.storage.db import DB
+    from recall.query.llm import is_available, ask as llm_ask, DevMemLLMError, configure
+    from recall.query.context import build_prompt_summary
 
     configure(model=config.llm_model)
     db = DB(config.db_path)
@@ -588,7 +588,7 @@ def timeline(date: Optional[str], repo: Optional[str]):
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
+    from recall.storage.db import DB
 
     db = DB(config.db_path)
     date_str = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -639,7 +639,7 @@ def repos(sort: str):
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
+    from recall.storage.db import DB
 
     db = DB(config.db_path)
     all_repos = db.get_all_repos()
@@ -691,10 +691,10 @@ def search(query: str, event_type: Optional[str], repo: Optional[str],
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
-    from devmem.storage.vectors import VectorStore
-    from devmem.processor.embedder import EmbedderQueue
-    from devmem.query.retriever import Retriever
+    from recall.storage.db import DB
+    from recall.storage.vectors import VectorStore
+    from recall.processor.embedder import EmbedderQueue
+    from recall.query.retriever import Retriever
 
     db = DB(config.db_path)
     vectors = VectorStore.from_file(config.faiss_path, dim=config.embedding_dim)
@@ -740,9 +740,9 @@ def stats():
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
-    from devmem.storage.vectors import VectorStore
-    from devmem.daemon import is_running
+    from recall.storage.db import DB
+    from recall.storage.vectors import VectorStore
+    from recall.daemon import is_running
 
     db = DB(config.db_path)
     vectors = VectorStore.from_file(config.faiss_path, dim=config.embedding_dim)
@@ -804,7 +804,7 @@ def privacy_list():
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
+    from recall.storage.db import DB
 
     db = DB(config.db_path)
     counts = db.get_event_counts_by_type()
@@ -838,7 +838,7 @@ def privacy_delete(before: Optional[str], event_type: Optional[str]):
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
+    from recall.storage.db import DB
 
     db = DB(config.db_path)
 
@@ -926,7 +926,7 @@ def export(from_date: Optional[str], to_date: Optional[str],
     config = load_config()
     _ensure_db(config)
 
-    from devmem.storage.db import DB
+    from recall.storage.db import DB
 
     db = DB(config.db_path)
     etypes = [EventType(event_type)] if event_type else None
@@ -980,7 +980,7 @@ def export(from_date: Optional[str], to_date: Optional[str],
 @cli.command("mcp-serve")
 def mcp_serve():
     """Start the MCP server on stdio (for Claude Code / Copilot integration)."""
-    from devmem.mcp_server import run_mcp_server
+    from recall.mcp_server import run_mcp_server
 
     run_mcp_server()
 
@@ -993,7 +993,7 @@ def mcp_serve():
 def _ensure_db(config) -> None:
     if not config.db_path.exists():
         err_console.print(
-            "[red]DevMem database not found. Run: devmem init[/red]"
+            "[red]Recall database not found. Run: recall init[/red]"
         )
         sys.exit(1)
 

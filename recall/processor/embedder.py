@@ -14,8 +14,8 @@ except ImportError:
     np = None  # type: ignore[assignment]
 
 if TYPE_CHECKING:
-    from devmem.storage.db import DB
-    from devmem.storage.vectors import VectorStore
+    from recall.storage.db import DB
+    from recall.storage.vectors import VectorStore
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ class EmbedderQueue:
         self._worker_thread = threading.Thread(
             target=self._worker,
             daemon=True,
-            name="devmem-embedder",
+            name="dev-recall-embedder",
         )
         self._worker_thread.start()
         logger.info("EmbedderQueue worker started (model=%s)", self._model_name)

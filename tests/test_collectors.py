@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from devmem.models import EventType, Source
+from recall.models import EventType, Source
 
 
 class TestShellCollector:
     def test_parse_valid_line(self, tmp_path):
-        from devmem.collectors.shell import ShellCollector
+        from recall.collectors.shell import ShellCollector
 
         events = []
         tsv = tmp_path / "shell.tsv"
@@ -39,7 +39,7 @@ class TestShellCollector:
         assert event.date == "2026-05-21"
 
     def test_privacy_filter_sensitive_cmd(self, tmp_path):
-        from devmem.collectors.shell import ShellCollector
+        from recall.collectors.shell import ShellCollector
 
         events = []
         tsv = tmp_path / "shell.tsv"
@@ -59,7 +59,7 @@ class TestShellCollector:
         assert collector._parse_line("2026-05-21T10:00:00Z\t/cwd\tls -la\t0\t10") is not None
 
     def test_parse_malformed_line(self, tmp_path):
-        from devmem.collectors.shell import ShellCollector
+        from recall.collectors.shell import ShellCollector
 
         events = []
         tsv = tmp_path / "shell.tsv"
@@ -77,7 +77,7 @@ class TestShellCollector:
         assert collector._parse_line("only_one_column") is None
 
     def test_incremental_read(self, tmp_path):
-        from devmem.collectors.shell import ShellCollector
+        from recall.collectors.shell import ShellCollector
 
         events = []
         tsv = tmp_path / "shell.tsv"
@@ -105,7 +105,7 @@ class TestShellCollector:
 
 class TestGitCollector:
     def test_parse_commit_line(self, tmp_path):
-        from devmem.collectors.git import GitCollector
+        from recall.collectors.git import GitCollector
 
         events = []
         tsv = tmp_path / "git.tsv"
@@ -130,7 +130,7 @@ class TestGitCollector:
         assert event.repo_name == "myapp"
 
     def test_parse_branch_line(self, tmp_path):
-        from devmem.collectors.git import GitCollector
+        from recall.collectors.git import GitCollector
 
         events = []
         tsv = tmp_path / "git.tsv"
@@ -152,7 +152,7 @@ class TestGitCollector:
         assert event.raw_data["new_branch"] == "feature/new-ui"
 
     def test_parse_empty_line(self, tmp_path):
-        from devmem.collectors.git import GitCollector
+        from recall.collectors.git import GitCollector
 
         events = []
         tsv = tmp_path / "git.tsv"
@@ -169,7 +169,7 @@ class TestGitCollector:
         assert collector._parse_line("   ") is None
 
     def test_parse_push_line(self, tmp_path):
-        from devmem.collectors.git import GitCollector
+        from recall.collectors.git import GitCollector
 
         events = []
         tsv = tmp_path / "git.tsv"
@@ -193,7 +193,7 @@ class TestGitCollector:
         assert event.repo_name == "myapp"
 
     def test_parse_merge_line(self, tmp_path):
-        from devmem.collectors.git import GitCollector
+        from recall.collectors.git import GitCollector
 
         events = []
         tsv = tmp_path / "git.tsv"
@@ -217,7 +217,7 @@ class TestGitCollector:
         assert event.repo_name == "myapp"
 
     def test_parse_squash_merge_line(self, tmp_path):
-        from devmem.collectors.git import GitCollector
+        from recall.collectors.git import GitCollector
 
         events = []
         tsv = tmp_path / "git.tsv"
@@ -239,7 +239,7 @@ class TestGitCollector:
 
 class TestCmdCategorizer:
     def _cat(self, cmd):
-        from devmem.collectors.shell import _categorize_cmd
+        from recall.collectors.shell import _categorize_cmd
         return _categorize_cmd(cmd)
 
     def test_test_commands(self):
@@ -280,7 +280,7 @@ class TestCmdCategorizer:
         assert self._cat("cat README.md") == "other"
 
     def test_cmd_category_in_event_metadata(self, tmp_path):
-        from devmem.collectors.shell import ShellCollector
+        from recall.collectors.shell import ShellCollector
 
         events = []
         tsv = tmp_path / "shell.tsv"
@@ -305,7 +305,7 @@ class TestCmdCategorizer:
 
 class TestAIChatDedup:
     def _make_collector(self):
-        from devmem.collectors.ai_chat import AIChatCollector
+        from recall.collectors.ai_chat import AIChatCollector
         store = {}
         return AIChatCollector(
             event_callback=lambda e: None,
@@ -314,7 +314,7 @@ class TestAIChatDedup:
         )
 
     def _make_ai_event(self, timestamp, content, repo_name="repo"):
-        from devmem.models import Event, EventType, Source
+        from recall.models import Event, EventType, Source
         return Event(
             timestamp=timestamp,
             date=timestamp[:10],

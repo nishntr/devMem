@@ -15,7 +15,7 @@ from typing import Callable, Optional
 from watchdog.events import FileModifiedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from devmem.models import Event, EventType, Source, build_content
+from recall.models import Event, EventType, Source, build_content
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +74,8 @@ class AIChatCollector:
 
         # Aider: watch each git repo root found at startup so live edits are captured
         for repo_root in _find_git_repos_shallow(Path.home(), depth=3):
+            if not self._observer.is_alive() if hasattr(self._observer, 'is_alive') else False:
+                break
             handler = _AIChatHandler(self, repo_root)
             try:
                 self._observer.schedule(handler, str(repo_root), recursive=False)
@@ -529,12 +531,8 @@ class AIChatCollector:
         )
 
     def _is_duplicate(self, event: Event) -> bool:
-        """Return True if this event's content hash has been seen before.
-
-        The hash includes both content and timestamp so that the same message
-        sent in two different sessions is not incorrectly deduplicated.
-        """
-        h = hashlib.sha256(f"{event.timestamp}\x00{event.content}".encode()).hexdigest()[:16]
+        """Return True if this event's content hash has been seen before."""
+        h = hashlib.sha256(event.content.encode()).hexdigest()[:16]
         seen_json = self._get_kv(_HASH_SET_KEY) or "[]"
         try:
             seen: list[str] = json.loads(seen_json)

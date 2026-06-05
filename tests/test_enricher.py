@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from devmem.models import Event, EventType, Source
+from recall.models import Event, EventType, Source
 
 
 def _make_terminal_event(cmd: str, cwd: str = "/home/user/myapp") -> Event:
-    from devmem.models import build_content
+    from recall.models import build_content
 
     raw = {"cmd": cmd, "cwd": cwd, "exit_code": 0, "duration_ms": 100}
     return Event(
@@ -23,7 +23,7 @@ def _make_terminal_event(cmd: str, cwd: str = "/home/user/myapp") -> Event:
 
 class TestEnricher:
     def _make_enricher(self, cmd_ignore=None, file_ignore=None, repo_ignore=None):
-        from devmem.processor.enricher import Enricher
+        from recall.processor.enricher import Enricher
 
         repos = {}
 
@@ -58,7 +58,7 @@ class TestEnricher:
         assert "git status" in result.content
 
     def test_language_detected_for_file_save(self):
-        from devmem.models import build_content
+        from recall.models import build_content
 
         enricher, _ = self._make_enricher()
         raw = {
@@ -80,7 +80,7 @@ class TestEnricher:
         assert result.raw_data.get("language") == "python"
 
     def test_sensitive_file_dropped(self):
-        from devmem.models import build_content
+        from recall.models import build_content
 
         enricher, _ = self._make_enricher(file_ignore=["*.env"])
         raw = {"filename": ".env", "file_path": "/home/user/repo/.env", "language": ""}

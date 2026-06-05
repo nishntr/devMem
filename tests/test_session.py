@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from devmem.models import Event, EventType, Source
+from recall.models import Event, EventType, Source
 
 
 def _make_event(ts: str, repo: str = "/home/user/myapp") -> Event:
-    from devmem.models import build_content
+    from recall.models import build_content
 
     raw = {"cmd": "git status", "cwd": repo, "exit_code": 0, "duration_ms": 10}
     return Event(
@@ -25,7 +25,7 @@ def _make_event(ts: str, repo: str = "/home/user/myapp") -> Event:
 
 class TestSessionDetector:
     def _make_detector(self, idle_minutes: int = 30):
-        from devmem.processor.session import SessionDetector
+        from recall.processor.session import SessionDetector
 
         sessions = {}
 

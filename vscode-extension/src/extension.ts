@@ -10,7 +10,7 @@ function getPort(): number {
     // Try reading from config file first, then VS Code setting
     const cfgFile = path.join(
         process.env.HOME || process.env.USERPROFILE || '',
-        '.config', 'devmem', 'config.json'
+        '.config', 'dev-recall', 'config.json'
     );
     try {
         const raw = fs.readFileSync(cfgFile, 'utf-8');
@@ -18,12 +18,12 @@ function getPort(): number {
         if (cfg.daemon_port) { return cfg.daemon_port; }
     } catch { /* ignore */ }
 
-    const vsCfg = vscode.workspace.getConfiguration('devmem');
+    const vsCfg = vscode.workspace.getConfiguration('devrecall');
     return vsCfg.get<number>('port', 27182);
 }
 
 function isEnabled(): boolean {
-    return vscode.workspace.getConfiguration('devmem').get<boolean>('enabled', true);
+    return vscode.workspace.getConfiguration('devrecall').get<boolean>('enabled', true);
 }
 
 // ---------------------------------------------------------------------------

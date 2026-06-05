@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from devmem.models import Event, EventType, Source
+from recall.models import Event, EventType, Source
 
 
 def _make_event(
@@ -30,7 +30,7 @@ def _make_event(
 class TestDB:
     @pytest.fixture
     def db(self, tmp_path):
-        from devmem.storage.db import DB
+        from recall.storage.db import DB
 
         d = DB(tmp_path / "test.db")
         yield d
@@ -135,7 +135,7 @@ class TestDBMigration:
     def test_migration_preserves_indexes_and_triggers(self, tmp_path):
         """After migrating an old-style DB, indexes and FTS triggers must still exist."""
         import sqlite3
-        from devmem.storage.db import DB
+        from recall.storage.db import DB
 
         db_path = tmp_path / "legacy.db"
 
@@ -191,7 +191,7 @@ class TestDBMigration:
         assert events[0].content == "old event"
 
         # Verify new event types are now accepted (CHECK constraint gone)
-        from devmem.models import Event, EventType, Source
+        from recall.models import Event, EventType, Source
         new_event = Event(
             timestamp="2026-05-01T00:00:00Z",
             date="2026-05-01",
@@ -227,7 +227,7 @@ class TestDBMigration:
     def test_new_db_not_migrated(self, tmp_path):
         """A fresh database must not trigger the migration path."""
         import sqlite3
-        from devmem.storage.db import DB
+        from recall.storage.db import DB
 
         db_path = tmp_path / "fresh.db"
         db = DB(db_path)

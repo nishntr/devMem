@@ -3,7 +3,7 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "devmem"
+name = "dev-recall"
 version = "0.1.0"
 description = "Local-first developer memory layer"
 readme = "README.md"
@@ -25,14 +25,22 @@ dependencies = [
 ]
 
 [project.scripts]
-devmem = "devmem.cli:cli"
+recall = "recall.cli:cli"
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov", "pytest-mock", "ruff"]
+# Optional collectors — install only the ones you want
+linux = [
+    "psutil>=5.9",         # process/port tracking
+    "dbus-next>=0.2",      # session lock/sleep events (Linux D-Bus)
+    "docker>=7.0",         # Docker/Podman container events
+]
+# PyGObject (gi/Wnck) for X11 window tracking is a system package;
+# install via: sudo apt install python3-gi gir1.2-wnck-3.0
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["devmem*"]
+include = ["recall*"]
 
 [tool.ruff]
 line-length = 100
