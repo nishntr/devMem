@@ -13,7 +13,7 @@ USER devuser
 WORKDIR /home/devuser
 
 # Copy the project into the container
-COPY --chown=devuser:devuser . /home/devuser/devmem/
+COPY --chown=devuser:devuser . /home/devuser/dev-recall/
 
 # Install deps in separate layers so Docker caches each one.
 # sentence-transformers/PyTorch (~800 MB) is omitted — embeddings fail
@@ -32,15 +32,15 @@ RUN /home/devuser/.venv/bin/pip install --quiet --timeout 60 --retries 3 \
 RUN /home/devuser/.venv/bin/pip install --quiet --timeout 60 --retries 5 \
         pytest pytest-cov pytest-mock ruff
 
-# Install devmem itself (no ML deps)
+# Install dev-recall itself (no ML deps)
 RUN /home/devuser/.venv/bin/pip install --quiet --no-deps \
-        -e "/home/devuser/devmem"
+        -e "/home/devuser/dev-recall"
 
 ENV PATH="/home/devuser/.venv/bin:$PATH"
 
 # Pre-configure a fake git identity (required for git hooks to fire)
-RUN git config --global user.email "sandbox@devmem.test" && \
+RUN git config --global user.email "sandbox@dev-recall.test" && \
     git config --global user.name "Sandbox User"
 
-# Default: drop into an interactive shell so you can run devmem commands manually
+# Default: drop into an interactive shell so you can run recall commands manually
 CMD ["/bin/zsh"]

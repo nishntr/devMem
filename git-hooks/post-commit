@@ -1,8 +1,8 @@
 #!/bin/sh
-# DevMem git post-commit hook
+# Recall git post-commit hook
 # Installed globally via: git config --global core.hooksPath ~/.config/devmem/git-hooks/
 
-__devmem_dir="${DEVMEM_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 HASH=$(git rev-parse HEAD 2>/dev/null) || exit 0
 MSG=$(git log -1 --format="%s" 2>/dev/null)
@@ -13,6 +13,6 @@ TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 printf '%s\tcommit\t%s\t%s\t%s\t%s\t%s\t%s\n' \
     "$TS" "$REPO_PATH" "$HASH" "$BRANCH" "$MSG" "$FILES" "$AUTHOR" \
-    >> "$__devmem_dir/git.tsv" 2>/dev/null
+    >> "$__devrecall_dir/git.tsv" 2>/dev/null
 
 exit 0

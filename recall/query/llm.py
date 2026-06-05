@@ -45,7 +45,7 @@ def ask(messages: list[dict], model: Optional[str] = None) -> str:
     key = _api_key or os.environ.get("OPENROUTER_API_KEY") or os.environ.get("DEVMEM_LLM_KEY")
     if not key:
         raise DevMemLLMError(
-            "No LLM API key found.  Set OPENROUTER_API_KEY or run: devmem config llm_key <key>"
+            "No LLM API key found.  Set OPENROUTER_API_KEY or run: recall config llm_key <key>"
         )
 
     effective_model = model or _model or _DEFAULT_MODEL

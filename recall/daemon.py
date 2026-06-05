@@ -1,4 +1,4 @@
-"""DevMem background daemon — orchestrates all collectors and background threads."""
+"""Recall background daemon — orchestrates all collectors and background threads."""
 
 from __future__ import annotations
 
@@ -12,19 +12,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from devmem.config import Config
-from devmem.models import Event
+from recall.config import Config
+from recall.models import Event
 
 logger = logging.getLogger(__name__)
 
 _SYSTEMD_UNIT_TEMPLATE = """\
 [Unit]
-Description=DevMem developer activity daemon
+Description=Recall developer activity daemon
 After=default.target
 
 [Service]
 Type=simple
-ExecStart={devmem_bin} daemon start --foreground
+ExecStart={recall_bin} daemon start --foreground
 Restart=on-failure
 RestartSec=5
 
@@ -53,11 +53,11 @@ class Daemon:
         self._stop_event = threading.Event()
 
         # Lazy imports to keep startup fast
-        from devmem.storage.db import DB
-        from devmem.storage.vectors import VectorStore
-        from devmem.processor.embedder import EmbedderQueue
-        from devmem.processor.enricher import Enricher
-        from devmem.processor.session import SessionDetector
+        from recall.storage.db import DB
+        from recall.storage.vectors import VectorStore
+        from recall.processor.embedder import EmbedderQueue
+        from recall.processor.enricher import Enricher
+        from recall.processor.session import SessionDetector
 
         self._db = DB(config.db_path)
         self._vectors = VectorStore.from_file(config.faiss_path, dim=config.embedding_dim)
@@ -93,6 +93,10 @@ class Daemon:
         self._git_collector = None
         self._ai_collector = None
         self._flask_thread = None
+        self._window_collector = None
+        self._session_event_collector = None
+        self._container_collector = None
+        self._process_collector = None
 
     # ------------------------------------------------------------------
     # Event pipeline
@@ -124,7 +128,7 @@ class Daemon:
 
     def start(self, foreground: bool = False) -> None:
         """Start the daemon (blocks if foreground=True)."""
-        logger.info("DevMem daemon starting (PID %d)", os.getpid())
+        logger.info("Recall daemon starting (PID %d)", os.getpid())
 
         if not foreground:
             self._write_pid()
@@ -136,11 +140,11 @@ class Daemon:
         threading.Thread(
             target=self._embedder.embed_pending,
             daemon=True,
-            name="devmem-embed-pending",
+            name="dev-recall-embed-pending",
         ).start()
 
         # Shell collector
-        from devmem.collectors.shell import ShellCollector
+        from recall.collectors.shell import ShellCollector
 
         self._shell_collector = ShellCollector(
             shell_tsv=self._config.shell_tsv_path,
@@ -152,7 +156,7 @@ class Daemon:
         self._shell_collector.start()
 
         # Git collector
-        from devmem.collectors.git import GitCollector
+        from recall.collectors.git import GitCollector
 
         self._git_collector = GitCollector(
             git_tsv=self._config.git_tsv_path,
@@ -165,7 +169,7 @@ class Daemon:
 
         # AI chat collector
         if self._config.capture.get("ai_chat", True):
-            from devmem.collectors.ai_chat import AIChatCollector
+            from recall.collectors.ai_chat import AIChatCollector
 
             self._ai_collector = AIChatCollector(
                 event_callback=self._handle_raw_event,
@@ -180,9 +184,39 @@ class Daemon:
             self._flask_thread = threading.Thread(
                 target=self._run_flask,
                 daemon=True,
-                name="devmem-flask",
+                name="dev-recall-flask",
             )
             self._flask_thread.start()
+
+        # Window tracking (Linux X11/XWayland via libwnck, optional)
+        if self._config.capture.get("window_tracking", True):
+            from recall.collectors.linux_window import LinuxWindowCollector
+
+            self._window_collector = LinuxWindowCollector(event_callback=self._handle_raw_event)
+            self._window_collector.start()
+
+        # Session events (Linux D-Bus logind, optional)
+        if self._config.capture.get("session_events", True):
+            from recall.collectors.linux_session import LinuxSessionCollector
+
+            self._session_event_collector = LinuxSessionCollector(
+                event_callback=self._handle_raw_event
+            )
+            self._session_event_collector.start()
+
+        # Container events (Docker/Podman, optional)
+        if self._config.capture.get("container_events", True):
+            from recall.collectors.containers import ContainerCollector
+
+            self._container_collector = ContainerCollector(event_callback=self._handle_raw_event)
+            self._container_collector.start()
+
+        # Process/port tracking (psutil, optional)
+        if self._config.capture.get("process_tracking", True):
+            from recall.collectors.linux_process import ProcessCollector
+
+            self._process_collector = ProcessCollector(event_callback=self._handle_raw_event)
+            self._process_collector.start()
 
         # Daily summarizer
         threading.Thread(
@@ -202,7 +236,7 @@ class Daemon:
         signal.signal(signal.SIGTERM, self._on_signal)
         signal.signal(signal.SIGINT, self._on_signal)
 
-        logger.info("DevMem daemon running")
+        logger.info("Recall daemon running")
 
         if foreground:
             self._stop_event.wait()
@@ -212,13 +246,21 @@ class Daemon:
         self._stop_event.set()
 
     def _shutdown(self) -> None:
-        logger.info("DevMem daemon shutting down…")
+        logger.info("Recall daemon shutting down…")
         if self._shell_collector:
             self._shell_collector.stop()
         if self._git_collector:
             self._git_collector.stop()
         if self._ai_collector:
             self._ai_collector.stop()
+        if self._window_collector:
+            self._window_collector.stop()
+        if self._session_event_collector:
+            self._session_event_collector.stop()
+        if self._container_collector:
+            self._container_collector.stop()
+        if self._process_collector:
+            self._process_collector.stop()
         self._embedder.stop()
         # Final FAISS save
         try:
@@ -227,7 +269,7 @@ class Daemon:
             logger.exception("Final FAISS save failed")
         self._db.close()
         self._remove_pid()
-        logger.info("DevMem daemon stopped")
+        logger.info("Recall daemon stopped")
 
     def _on_signal(self, signum, frame) -> None:
         logger.info("Received signal %d — stopping", signum)
@@ -239,7 +281,7 @@ class Daemon:
 
     def _run_flask(self) -> None:
         from flask import Flask, request, jsonify
-        from devmem.collectors.vscode import parse_vscode_event
+        from recall.collectors.vscode import parse_vscode_event
 
         app = Flask(__name__)
 
@@ -293,8 +335,8 @@ class Daemon:
         if not events:
             return
 
-        from devmem.query.context import build_prompt_summary
-        from devmem.query.llm import ask as llm_ask, is_available
+        from recall.query.context import build_prompt_summary
+        from recall.query.llm import ask as llm_ask, is_available
 
         if not is_available():
             logger.debug("No LLM key — skipping daily summary for %s", date)
@@ -396,12 +438,12 @@ def write_systemd_unit(config: Config) -> Path:
     """Write the systemd user unit file and return its path."""
     import shutil
 
-    devmem_bin = shutil.which("devmem") or sys.executable + " -m devmem"
-    unit_content = _SYSTEMD_UNIT_TEMPLATE.format(devmem_bin=devmem_bin)
+    recall_bin = shutil.which("recall") or sys.executable + " -m devmem"
+    unit_content = _SYSTEMD_UNIT_TEMPLATE.format(recall_bin=recall_bin)
 
     unit_dir = Path.home() / ".config" / "systemd" / "user"
     unit_dir.mkdir(parents=True, exist_ok=True)
-    unit_path = unit_dir / "devmem.service"
+    unit_path = unit_dir / "dev-recall.service"
     unit_path.write_text(unit_content)
     return unit_path
 
@@ -412,7 +454,7 @@ def start_daemon_background(config: Config) -> int:
 
     log_fh = open(str(config.log_path), "a")  # noqa: SIM115
     proc = subprocess.Popen(
-        [sys.executable, "-m", "devmem.daemon_main"],
+        [sys.executable, "-m", "recall.daemon_main"],
         start_new_session=True,
         stdout=log_fh,
         stderr=subprocess.STDOUT,

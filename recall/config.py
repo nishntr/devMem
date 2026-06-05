@@ -1,4 +1,4 @@
-"""DevMem configuration — load, save, and default settings."""
+"""Recall configuration — load, save, and default settings."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from typing import Any
 
 from platformdirs import user_config_dir, user_data_dir
 
-_APP_NAME = "devmem"
+_APP_NAME = "dev-recall"
 
 # ---------------------------------------------------------------------------
 # Defaults
@@ -214,8 +214,8 @@ class Config:
 
 
 def _config_file_path() -> Path:
-    """Return the path to the config JSON file, respecting DEVMEM_CONFIG env override."""
-    env_path = os.environ.get("DEVMEM_CONFIG")
+    """Return the path to the config JSON file, respecting DEV_RECALL_CONFIG env override."""
+    env_path = os.environ.get("DEV_RECALL_CONFIG")
     if env_path:
         return Path(env_path).expanduser()
     return Path(user_config_dir(_APP_NAME)) / "config.json"

@@ -7,7 +7,7 @@ from typing import Optional
 
 import humanize
 
-from devmem.models import Event
+from recall.models import Event
 
 
 # ---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ def build_prompt_ask(
     time_range: Optional[str] = None,
 ) -> list[dict]:
     """
-    Build messages for `devmem ask "<query>"`.
+    Build messages for `recall ask "<query>"`.
 
     Parameters
     ----------

@@ -7,7 +7,7 @@ import os
 from datetime import datetime, timezone
 from typing import Callable, Optional
 
-from devmem.models import Event, EventType, Source, build_content
+from recall.models import Event, EventType, Source, build_content
 
 logger = logging.getLogger(__name__)
 

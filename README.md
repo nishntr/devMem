@@ -1,12 +1,12 @@
-# DevMem
+# Recall
 
 **Local-first developer memory layer.** Captures every developer activity — terminal commands, git commits, file edits, repo opens, AI chat sessions — into a structured SQLite database with a FAISS vector index. Enables natural language recall:
 
 ```
-devmem ask "what did I work on last Tuesday?"
-devmem ask "how did I fix the auth bug?"
-devmem today
-devmem timeline
+recall ask "what did I work on last Tuesday?"
+recall ask "how did I fix the auth bug?"
+recall today
+recall timeline
 ```
 
 ---
@@ -14,12 +14,13 @@ devmem timeline
 ## Quick Start
 
 ```bash
-pip install devmem
-devmem init
+pip install dev-recall
+recall init
+source .zshrc  # or .bashrc
 ```
 
-`devmem init` will:
-1. Create `~/.local/share/devmem/` and `~/.config/devmem/`
+`recall init` will:
+1. Create `~/.local/share/recall/` and `~/.config/recall/`
 2. Initialize the SQLite database + FAISS vector index
 3. Install the zsh/bash shell hook (appends `source` line to your rc file)
 4. Set `git config --global core.hooksPath` to capture all commits
@@ -31,21 +32,21 @@ devmem init
 
 | Command | Description |
 |---------|-------------|
-| `devmem init` | First-time setup |
-| `devmem ask "<query>"` | Natural language search with LLM answer |
-| `devmem today` | Summary of today's activity |
-| `devmem week` | Summary of this week's activity |
-| `devmem timeline` | Chronological event list for a day |
-| `devmem search "<query>"` | Raw hybrid search (no LLM) |
-| `devmem repos` | List all tracked repos |
-| `devmem stats` | Capture statistics |
-| `devmem export` | Export events as JSON or CSV |
-| `devmem config` | View/edit configuration |
-| `devmem privacy list` | Show what's captured |
-| `devmem privacy delete` | Delete captured events |
-| `devmem privacy ignore --cmd "pattern"` | Add a privacy filter |
-| `devmem daemon start/stop/status/logs` | Manage the background daemon |
-| `devmem mcp-serve` | Start MCP server (for Claude Code / Copilot) |
+| `recall init` | First-time setup |
+| `recall ask "<query>"` | Natural language search with LLM answer |
+| `recall today` | Summary of today's activity |
+| `recall week` | Summary of this week's activity |
+| `recall timeline` | Chronological event list for a day |
+| `recall search "<query>"` | Raw hybrid search (no LLM) |
+| `recall repos` | List all tracked repos |
+| `recall stats` | Capture statistics |
+| `recall export` | Export events as JSON or CSV |
+| `recall config` | View/edit configuration |
+| `recall privacy list` | Show what's captured |
+| `recall privacy delete` | Delete captured events |
+| `recall privacy ignore --cmd "pattern"` | Add a privacy filter |
+| `recall daemon start/stop/status/logs` | Manage the background daemon |
+| `recall mcp-serve` | Start MCP server (for Claude Code / Copilot) |
 
 ---
 
@@ -68,18 +69,18 @@ CLI + MCP Server
 ## Data Sources
 
 ### Shell commands (zsh / bash)
-Add to `~/.zshrc` (done automatically by `devmem init`):
+Add to `~/.zshrc` (done automatically by `recall init`):
 ```bash
-source ~/.config/devmem/hook.zsh
+source ~/.config/dev-recall/hook.zsh
 ```
 
 ### Git commits
-`devmem init` sets `core.hooksPath` globally — all future commits in any repo are captured.
+`recall init` sets `core.hooksPath` globally — all future commits in any repo are captured.
 
 ### VS Code activity
 Install the extension:
 ```bash
-code --install-extension devmem.devmem-vscode
+code --install-extension recall.recall-vscode
 ```
 
 ### AI chat sessions
@@ -93,27 +94,27 @@ Automatically scanned from:
 
 ## LLM Integration
 
-DevMem uses [OpenRouter](https://openrouter.ai) for the `ask` command and daily summaries.
+Recall uses [OpenRouter](https://openrouter.ai) for the `ask` command and daily summaries.
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-...
-devmem ask "what was I debugging yesterday?"
+recall ask "what was I debugging yesterday?"
 ```
 
-Without an API key, `devmem ask` falls back to `--no-llm` mode (shows retrieved events directly). All other commands work fully offline.
+Without an API key, `recall ask` falls back to `--no-llm` mode (shows retrieved events directly). All other commands work fully offline.
 
 ---
 
 ## MCP Server
 
-Use DevMem as a context source in Claude Code or VS Code Copilot:
+Use Recall as a context source in Claude Code or VS Code Copilot:
 
 **Claude Code** (`~/.config/claude/mcp.json`):
 ```json
 {
   "mcpServers": {
-    "devmem": {
-      "command": "devmem",
+    "dev-recall": {
+      "command": "dev-recall",
       "args": ["mcp-serve"]
     }
   }
@@ -124,9 +125,9 @@ Use DevMem as a context source in Claude Code or VS Code Copilot:
 ```json
 {
   "servers": {
-    "devmem": {
+    "dev-recall": {
       "type": "stdio",
-      "command": "devmem",
+      "command": "dev-recall",
       "args": ["mcp-serve"]
     }
   }
@@ -146,21 +147,21 @@ Available MCP tools: `recall`, `today_summary`, `recent_repos`, `find_command`, 
 - Default retention: **90 days** (configurable)
 
 ```bash
-devmem privacy list           # see what's captured
-devmem privacy delete --before 2026-01-01
-devmem privacy ignore --cmd "*mycompany*"
+recall privacy list           # see what's captured
+recall privacy delete --before 2026-01-01
+recall privacy ignore --cmd "*mycompany*"
 ```
 
 ---
 
 ## Configuration
 
-Config file: `~/.config/devmem/config.json`
+Config file: `~/.config/dev-recall/config.json`
 
 ```bash
-devmem config                          # show all settings
-devmem config daemon_port 8080        # change port
-devmem config retention_days 30       # shorter retention
+recall config                          # show all settings
+recall config daemon_port 8080        # change port
+recall config retention_days 30       # shorter retention
 ```
 
 Key settings:
@@ -179,14 +180,14 @@ Key settings:
 ## Data Storage
 
 ```
-~/.local/share/devmem/
+~/.local/share/dev-recall/
 ├── events.db       # SQLite (events + FTS5 + sessions + daily_summaries)
 ├── vectors.faiss   # FAISS vector index
 ├── shell.tsv       # shell hook ring buffer
 ├── git.tsv         # git hook ring buffer
 └── daemon.pid      # running daemon PID
 
-~/.config/devmem/
+~/.config/dev-recall/
 ├── config.json
 ├── hook.zsh / hook.bash
 └── git-hooks/post-commit + post-checkout
@@ -198,14 +199,14 @@ Key settings:
 
 ```bash
 git clone <repo>
-cd devmem
+cd dev-recall
 pip install -e ".[dev]"
 pytest
 ```
 
 ### Sandbox testing
 
-`devmem init` makes system-wide changes (modifies `~/.zshrc`, sets a global `git config core.hooksPath`, starts a background daemon). Use the provided Docker sandbox to test safely without touching your host environment.
+`recall init` makes system-wide changes (modifies `~/.zshrc`, sets a global `git config core.hooksPath`, starts a background daemon). Use the provided Docker sandbox to test safely without touching your host environment.
 
 **Prerequisites:** Docker
 
@@ -216,11 +217,11 @@ pytest
 # Run the full test suite
 ./sandbox.sh test
 
-# Run `devmem init` and inspect every file it creates
+# Run `recall init` and inspect every file it creates
 ./sandbox.sh init
 
 # Run any arbitrary command
-./sandbox.sh "devmem --help"
+./sandbox.sh "recall --help"
 ```
 
 What the sandbox isolates:
@@ -233,7 +234,7 @@ What the sandbox isolates:
 | Network calls to OpenRouter | Blocked via `--network none` |
 | Privilege escalation | `--cap-drop ALL --security-opt no-new-privileges` |
 
-Alternatively, use a throwaway VM: `multipass launch --name devmem-test`
+Alternatively, use a throwaway VM: `multipass launch --name dev-recall-test`
 
 ---
 

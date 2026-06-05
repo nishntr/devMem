@@ -68,7 +68,7 @@ vscode-extension/*.vsix
 ehthumbs.db
 Thumbs.db
 
-# ── DevMem runtime data ───────────────────────────────────────────────────────
+# ── Recall runtime data ───────────────────────────────────────────────────────
 # Local data directory — never commit user activity data
 *.db
 *.db-wal

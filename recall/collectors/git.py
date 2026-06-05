@@ -14,7 +14,7 @@ from typing import Callable, Optional
 from watchdog.events import FileModifiedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from devmem.models import Event, EventType, Source, build_content
+from recall.models import Event, EventType, Source, build_content
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class GitCollector:
     Watches git.tsv written by the global git hooks.
 
     Also starts a poller as a fallback for repos that already had
-    core.hooksPath set before devmem was installed.
+    core.hooksPath set before dev-recall was installed.
     """
 
     def __init__(
@@ -86,7 +86,7 @@ class GitCollector:
         self._poller_thread = threading.Thread(
             target=self._poller_loop,
             daemon=True,
-            name="devmem-git-poller",
+            name="dev-recall-git-poller",
         )
         self._poller_thread.start()
         logger.info("GitCollector watching %s + poller started", self._path)

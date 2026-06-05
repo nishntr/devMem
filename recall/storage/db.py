@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator, Optional
 
-from devmem.models import Event, EventType, Source
+from recall.models import Event, EventType, Source
 
 # ---------------------------------------------------------------------------
 # SQL DDL
@@ -137,9 +137,7 @@ class DB:
         if row is None or "CONSTRAINT valid_type CHECK" not in (row[0] or ""):
             return
         _log.info("DB migration: removing event_type CHECK constraint")
-        # SQLite requires a full table rebuild to drop a CHECK constraint.
-        # After rebuilding we must also recreate all indexes and FTS triggers
-        # that were defined on the original table.
+        # SQLite requires a full table rebuild to drop a CHECK constraint
         self._conn.executescript("""
             ALTER TABLE events RENAME TO _events_bak;
             CREATE TABLE events (
@@ -158,23 +156,17 @@ class DB:
             );
             INSERT INTO events SELECT * FROM _events_bak;
             DROP TABLE _events_bak;
-
-            -- Recreate indexes (IF NOT EXISTS is safe if they already exist)
             CREATE INDEX IF NOT EXISTS idx_events_date       ON events(date);
             CREATE INDEX IF NOT EXISTS idx_events_timestamp  ON events(timestamp);
             CREATE INDEX IF NOT EXISTS idx_events_type       ON events(event_type);
             CREATE INDEX IF NOT EXISTS idx_events_repo       ON events(repo_name);
             CREATE INDEX IF NOT EXISTS idx_events_session    ON events(session_id);
             CREATE INDEX IF NOT EXISTS idx_events_embedding  ON events(embedding_id);
-
-            -- Recreate FTS sync triggers
-            DROP TRIGGER IF EXISTS events_ai;
-            CREATE TRIGGER events_ai AFTER INSERT ON events BEGIN
+            CREATE TRIGGER IF NOT EXISTS events_ai AFTER INSERT ON events BEGIN
                 INSERT INTO events_fts(rowid, content, repo_name)
                 VALUES (new.id, new.content, COALESCE(new.repo_name, ''));
             END;
-            DROP TRIGGER IF EXISTS events_ad;
-            CREATE TRIGGER events_ad AFTER DELETE ON events BEGIN
+            CREATE TRIGGER IF NOT EXISTS events_ad AFTER DELETE ON events BEGIN
                 INSERT INTO events_fts(events_fts, rowid, content, repo_name)
                 VALUES ('delete', old.id, old.content, COALESCE(old.repo_name, ''));
             END;

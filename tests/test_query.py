@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from devmem.query.timeparser import parse_time_expression, _day_range
+from recall.query.timeparser import parse_time_expression, _day_range
 
 
 class TestTimeParser:
@@ -71,11 +71,11 @@ class TestRetriever:
 
     @pytest.fixture
     def setup(self, tmp_path):
-        from devmem.storage.db import DB
-        from devmem.storage.vectors import VectorStore
-        from devmem.processor.embedder import EmbedderQueue
-        from devmem.query.retriever import Retriever
-        from devmem.models import Event, EventType, Source, build_content
+        from recall.storage.db import DB
+        from recall.storage.vectors import VectorStore
+        from recall.processor.embedder import EmbedderQueue
+        from recall.query.retriever import Retriever
+        from recall.models import Event, EventType, Source, build_content
 
         db = DB(tmp_path / "test.db")
         vectors = VectorStore(dim=384)

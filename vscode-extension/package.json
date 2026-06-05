@@ -1,9 +1,9 @@
 {
-  "name": "devmem-vscode",
-  "displayName": "DevMem",
-  "description": "Developer memory layer — captures workspace activity for devmem",
+  "name": "recall-vscode",
+  "displayName": "Recall",
+  "description": "Developer memory layer — captures workspace activity for dev-recall",
   "version": "0.1.0",
-  "publisher": "devmem",
+  "publisher": "dev-recall",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -12,17 +12,17 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "DevMem",
+      "title": "Recall",
       "properties": {
-        "devmem.port": {
+        "recall.port": {
           "type": "number",
           "default": 27182,
-          "description": "Port for the DevMem daemon HTTP server"
+          "description": "Port for the Recall daemon HTTP server"
         },
-        "devmem.enabled": {
+        "recall.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable the DevMem VS Code extension"
+          "description": "Enable/disable the Recall VS Code extension"
         }
       }
     }

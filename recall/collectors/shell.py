@@ -13,7 +13,7 @@ from typing import Callable, Optional
 from watchdog.events import FileModifiedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from devmem.models import Event, EventType, Source, build_content
+from recall.models import Event, EventType, Source, build_content
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ _CMD_CATEGORY_RULES: list[tuple[str, str]] = [
     ("phpunit", "test"),
     ("rspec ", "test"),
     ("flutter test", "test"),
-    # build — match bare command first, then with arguments
+    # build
     ("make", "build"),
     ("cmake", "build"),
     ("cargo build", "build"),
@@ -87,11 +87,11 @@ _CMD_CATEGORY_RULES: list[tuple[str, str]] = [
     ("uv add", "install"),
     ("uv pip install", "install"),
     # deploy
+    ("docker", "deploy"),
     ("kubectl ", "deploy"),
     ("terraform ", "deploy"),
     ("helm ", "deploy"),
     ("ansible", "deploy"),
-    ("docker ", "deploy"),
     ("fly deploy", "deploy"),
     ("vercel ", "deploy"),
     ("netlify deploy", "deploy"),
