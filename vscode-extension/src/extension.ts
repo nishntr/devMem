@@ -8,22 +8,28 @@ import * as fs from 'fs';
 
 function getPort(): number {
     // Try reading from config file first, then VS Code setting
-    const cfgFile = path.join(
-        process.env.HOME || process.env.USERPROFILE || '',
-        '.config', 'dev-recall', 'config.json'
-    );
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    // Cross-platform config path
+    let cfgFile: string;
+    if (process.platform === 'darwin') {
+        cfgFile = path.join(home, 'Library', 'Application Support', 'dev-recall', 'config.json');
+    } else if (process.platform === 'win32') {
+        cfgFile = path.join(process.env.APPDATA || '', 'dev-recall', 'config.json');
+    } else {
+        cfgFile = path.join(home, '.config', 'dev-recall', 'config.json');
+    }
     try {
         const raw = fs.readFileSync(cfgFile, 'utf-8');
         const cfg = JSON.parse(raw);
         if (cfg.daemon_port) { return cfg.daemon_port; }
     } catch { /* ignore */ }
 
-    const vsCfg = vscode.workspace.getConfiguration('devrecall');
+    const vsCfg = vscode.workspace.getConfiguration('recall');
     return vsCfg.get<number>('port', 27182);
 }
 
 function isEnabled(): boolean {
-    return vscode.workspace.getConfiguration('devrecall').get<boolean>('enabled', true);
+    return vscode.workspace.getConfiguration('recall').get<boolean>('enabled', true);
 }
 
 // ---------------------------------------------------------------------------

@@ -47,6 +47,7 @@ source .zshrc  # or .bashrc
 | `recall privacy ignore --cmd "pattern"` | Add a privacy filter |
 | `recall daemon start/stop/status/logs` | Manage the background daemon |
 | `recall mcp-serve` | Start MCP server (for Claude Code / Copilot) |
+| `recall vscode install` | Build and install VS Code extension |
 
 ---
 
@@ -80,7 +81,7 @@ source ~/.config/dev-recall/hook.zsh
 ### VS Code activity
 Install the extension:
 ```bash
-code --install-extension recall.recall-vscode
+recall vscode install
 ```
 
 ### AI chat sessions

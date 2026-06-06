@@ -126,7 +126,12 @@ def init(yes: bool):
 
     # Step 6: VS Code extension hint
     _print_step(6, steps[5])
-    console.print("  → Run: [cyan]code --install-extension recall.recall-vscode[/cyan] (optional)")
+    if yes or click.confirm("  → Would you like to build and install the VS Code extension now?", default=False):
+        # We can call the function directly or via a new command
+        ctx = click.get_current_context()
+        ctx.invoke(vscode_install)
+    else:
+        console.print("  → Skip. Run manually later: [cyan]recall vscode install[/cyan]")
 
     console.print()
     console.print("[bold green]Done. Recall is running.[/bold green]")
@@ -983,6 +988,96 @@ def mcp_serve():
     from recall.mcp_server import run_mcp_server
 
     run_mcp_server()
+
+
+# ---------------------------------------------------------------------------
+# vscode
+# ---------------------------------------------------------------------------
+
+
+@cli.group()
+def vscode():
+    """Manage the Recall VS Code extension."""
+    pass
+
+
+@vscode.command("install")
+def vscode_install():
+    """Build and install the Recall VS Code extension."""
+    import shutil
+
+    ext_dir = Path(__file__).parent.parent / "vscode-extension"
+    # vsce produces name-version.vsix
+    vsix_pattern = "recall-vscode-*.vsix"
+
+    # Check for npm and code
+    if not shutil.which("npm"):
+        console.print("[red]npm not found. Install Node.js to build the VS Code extension.[/red]")
+        return
+    if not shutil.which("code"):
+        console.print("[red]'code' command not found. Make sure VS Code is in your PATH.[/red]")
+        return
+
+    # Install dependencies and build
+    console.print("[dim]Installing extension dependencies...[/dim]")
+    result = subprocess.run(
+        ["npm", "install"],
+        cwd=ext_dir,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        console.print(f"[red]npm install failed:[/red] {result.stderr}")
+        return
+
+    console.print("[dim]Compiling TypeScript...[/dim]")
+    result = subprocess.run(
+        ["npm", "run", "compile"],
+        cwd=ext_dir,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        console.print(f"[red]TypeScript compilation failed:[/red] {result.stderr}")
+        return
+
+    console.print("[dim]Packaging extension...[/dim]")
+    # Remove old vsix files first to avoid ambiguity
+    for old_vsix in ext_dir.glob("*.vsix"):
+        old_vsix.unlink()
+
+    result = subprocess.run(
+        ["npx", "@vscode/vsce", "package"],
+        cwd=ext_dir,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        console.print(f"[red]vsce package failed:[/red] {result.stderr}")
+        return
+
+    # Find the generated .vsix file
+    vsix_files = list(ext_dir.glob(vsix_pattern))
+    if not vsix_files:
+        console.print("[red]No .vsix file generated (looked for recall-vscode-*.vsix).[/red]")
+        return
+
+    vsix_path = vsix_files[0]
+    console.print(f"  → [green]✓[/green] Generated {vsix_path.name}")
+
+    # Install the extension
+    console.print(f"[dim]Installing extension via 'code --install-extension'...[/dim]")
+    result = subprocess.run(
+        ["code", "--install-extension", str(vsix_path)],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        console.print(f"[red]Extension installation failed:[/red] {result.stderr}")
+        return
+
+    console.print("[green]✓ VS Code extension installed successfully.[/green]")
+    console.print("  → Restart VS Code (or run 'Developer: Reload Window') to activate.")
 
 
 # ---------------------------------------------------------------------------
