@@ -12,6 +12,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+import importlib.resources as pkg_resources
 
 import click
 from rich.console import Console
@@ -66,7 +67,7 @@ _TYPE_STYLES = {
 
 
 @click.group()
-@click.version_option()
+@click.version_option(package_name="dev-recall")
 def cli():
     """Recall — local-first developer memory layer."""
     pass
@@ -1006,8 +1007,7 @@ def vscode_install():
     """Build and install the Recall VS Code extension."""
     import shutil
 
-    ext_dir = Path(__file__).parent.parent / "vscode-extension"
-    # vsce produces name-version.vsix
+    ext_dir = pkg_resources.files("recall") / "vscode-extension"    # vsce produces name-version.vsix
     vsix_pattern = "recall-vscode-*.vsix"
 
     # Check for npm and code

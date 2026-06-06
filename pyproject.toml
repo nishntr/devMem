@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dev-recall"
-version = "0.2.2"
+version = "0.2.3"
 description = "Local-first developer memory layer"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -41,6 +41,13 @@ linux = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["recall*"]
+
+[tool.setuptools.package-data]
+recall = ["vscode-extension/**"]
+
+# ensures non-.py files are included
+[tool.setuptools]
+include-package-data = true
 
 [tool.ruff]
 line-length = 100
