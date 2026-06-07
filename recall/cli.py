@@ -1007,7 +1007,7 @@ def vscode_install():
     """Build and install the Recall VS Code extension."""
     import shutil
 
-    ext_dir = pkg_resources.files("recall") / "vscode-extension"    # vsce produces name-version.vsix
+    ext_dir = pkg_resources.files("recall") / "vscode-extension"
     vsix_pattern = "recall-vscode-*.vsix"
 
     # Check for npm and code
