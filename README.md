@@ -4,10 +4,14 @@
 
 ```
 recall ask "what did I work on last Tuesday?"
-recall ask "how did I fix the auth bug?"
+OR
 recall today
+```
+![recall today](docs/today.png)
+```
 recall timeline
 ```
+![recall timeline](docs/timeline.png)
 
 ---
 
