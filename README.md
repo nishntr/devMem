@@ -1,10 +1,8 @@
 # Recall
 
-**Local-first developer memory layer.** Captures every developer activity — terminal commands, git commits, file edits, repo opens, AI chat sessions — into a structured SQLite database with a FAISS vector index. Enables natural language recall:
+**Time-travel for your dev workflow.** Recall is a local-first CLI that automatically records your development activity and lets you search it in plain English.
 
 ```
-recall ask "what did I work on last Tuesday?"
-OR
 recall today
 ```
 ![recall today](docs/today.png)
@@ -57,6 +55,7 @@ source .zshrc  # or .bashrc
 
 ## Architecture
 
+**🔒Privacy-first by design** - Everything is stored locally
 ```
 Collectors (shell hook, git hooks, VS Code ext, AI log watcher)
     ↓ events (TSV files + HTTP POST)
