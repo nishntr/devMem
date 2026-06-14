@@ -5,7 +5,7 @@
 # Only record branch switches, not file checkouts
 [ "$3" = "1" ] || exit 0
 
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 NEW_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 OLD_BRANCH=$(git name-rev --name-only "$1" 2>/dev/null || echo "unknown")

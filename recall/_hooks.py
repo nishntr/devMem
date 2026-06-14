@@ -93,7 +93,7 @@ GIT_POST_COMMIT = r'''#!/bin/sh
 # Recall git post-commit hook
 # Installed globally via: git config --global core.hooksPath ~/.config/dev-recall/git-hooks/
 
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 HASH=$(git rev-parse HEAD 2>/dev/null) || exit 0
 MSG=$(git log -1 --format="%s" 2>/dev/null)
@@ -116,7 +116,7 @@ GIT_POST_CHECKOUT = r'''#!/bin/sh
 # Only record branch switches, not file checkouts
 [ "$3" = "1" ] || exit 0
 
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 NEW_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 OLD_BRANCH=$(git name-rev --name-only "$1" 2>/dev/null || echo "unknown")
@@ -134,7 +134,7 @@ GIT_PRE_PUSH = r'''#!/bin/sh
 # Installed globally via: git config --global core.hooksPath ~/.config/dev-recall/git-hooks/
 
 REMOTE="$1"
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -162,7 +162,7 @@ GIT_POST_MERGE = r'''#!/bin/sh
 # $1=1 if squash merge, 0 otherwise
 
 IS_SQUASH="${1:-0}"
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -180,7 +180,7 @@ exit 0
 FISH_HOOK = r'''# Recall shell hook — source this in ~/.config/fish/config.fish
 # Installed by: recall init
 
-set -g __devrecall_dir (set -q DEV_RECALL_DATA_DIR; and echo $DEV_RECALL_DATA_DIR; or echo "$HOME/.local/share/devmem")
+set -g __devrecall_dir (set -q DEV_RECALL_DATA_DIR; and echo $DEV_RECALL_DATA_DIR; or echo "$HOME/.local/share/dev-recall")
 set -g __devrecall_shell_log "$__devrecall_dir/shell.tsv"
 set -g __devrecall_cmd ""
 set -g __devrecall_start_ms 0

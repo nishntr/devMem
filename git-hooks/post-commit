@@ -1,8 +1,8 @@
 #!/bin/sh
 # Recall git post-commit hook
-# Installed globally via: git config --global core.hooksPath ~/.config/devmem/git-hooks/
+# Installed globally via: git config --global core.hooksPath ~/.config/dev-recall/git-hooks/
 
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 HASH=$(git rev-parse HEAD 2>/dev/null) || exit 0
 MSG=$(git log -1 --format="%s" 2>/dev/null)

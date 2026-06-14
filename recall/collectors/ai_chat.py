@@ -248,12 +248,20 @@ class AIChatCollector:
         # Copilot debug logs have various shapes — try common structures
         messages: list[dict] = []
 
-        if "messages" in entry and isinstance(entry["messages"], list):
+        if entry.get("type") == "message" and "message" in entry and isinstance(entry["message"], dict):
+            # New message format: {"type": "message", "message": {"role": ..., "content": ...}}
+            messages = [entry["message"]]
+        elif "messages" in entry and isinstance(entry["messages"], list):
             messages = entry["messages"]
         elif "request" in entry and isinstance(entry.get("request"), dict):
             req = entry["request"]
             if "messages" in req:
                 messages = req["messages"]
+        elif "response" in entry and isinstance(entry.get("response"), dict):
+            # Some logs might have response with messages
+            res = entry["response"]
+            if "messages" in res:
+                messages = res["messages"]
         elif "role" in entry and "content" in entry:
             messages = [entry]
 
@@ -488,7 +496,12 @@ class AIChatCollector:
         ai_source: str,
         source: Source,
     ) -> Optional[Event]:
-        role = msg.get("role", "")
+        # Normalize roles to "user" or "assistant"
+        if role == "human":
+            role = "user"
+        elif role == "model":
+            role = "assistant"
+
         if role not in ("user", "assistant"):
             return None
 
@@ -600,12 +613,20 @@ def _extract_ts(entry: dict) -> str:
     """Extract a timestamp from a log entry dict, falling back to now."""
     for key in ("timestamp", "ts", "time", "created_at", "date"):
         if key in entry:
-            val = str(entry[key])
-            try:
-                dt = datetime.fromisoformat(val.replace("Z", "+00:00"))
-                return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-            except ValueError:
-                pass
+            val = entry[key]
+            if isinstance(val, (int, float)):
+                # Assume Unix milliseconds
+                try:
+                    dt = datetime.fromtimestamp(val / 1000, tz=timezone.utc)
+                    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                except (ValueError, OSError):
+                    pass
+            elif isinstance(val, str):
+                try:
+                    dt = datetime.fromisoformat(val.replace("Z", "+00:00"))
+                    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                except ValueError:
+                    pass
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

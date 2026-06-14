@@ -1,11 +1,11 @@
 #!/bin/sh
 # Recall git pre-push hook
-# Installed globally via: git config --global core.hooksPath ~/.config/devmem/git-hooks/
+# Installed globally via: git config --global core.hooksPath ~/.config/dev-recall/git-hooks/
 # Arguments: $1=remote_name $2=remote_url
 # Stdin: lines of "local_ref local_sha remote_ref remote_sha"
 
 REMOTE="$1"
-__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/devmem}"
+__devrecall_dir="${DEV_RECALL_DATA_DIR:-$HOME/.local/share/dev-recall}"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
